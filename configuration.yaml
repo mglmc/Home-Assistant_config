@@ -1,0 +1,332 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: 36.6203
+  longitude: -4.4999
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 43
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: Europe/Madrid
+
+  customize:
+    sensor.temperature:
+     device_class: temperature
+    sensor.humidity:
+     device_class: humidity
+
+# Show links to resources in log and frontend
+#introduction:
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+group:
+  plugs:
+    name: Plugs
+    icon: mdi:power-plug
+    view: yes
+    entities:
+      - switch.iplug
+      - switch.iplug2
+  alarms:
+    name: Alarm State
+    icon: mdi:alarm-multiple
+    view: yes
+    entities:
+      - input_boolean.alarm_on_input_status
+      - input_boolean.alarm_off_input_status
+      - input_boolean.alarm_on_input_status2
+      - input_boolean.alarm_off_input_status2
+      - input_datetime.turn_on_time
+      - input_datetime.turn_off_time
+      - input_datetime.turn_on_time2
+      - input_datetime.turn_off_time2
+      - sensor.time
+  graphics:
+    name: Graphics
+    icon: mdi:chart-line
+    view: yes
+    entities:
+     - history_graph.current_graph
+     - history_graph.watts_graph
+     - history_graph.temperature_graph
+     - history_graph.movements_graph
+     - history_graph.humidity_graph
+  automatic:
+    name: Other automatics
+    view: yes
+    icon: mdi:home-automation
+    entities:
+     - input_boolean.movement_input_status
+     - input_boolean.sunset_input_status
+
+http:
+  # Secrets are defined in the file secrets.yaml
+  # api_password: !secret http_password
+  # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+  # base_url: example.duckdns.org:8123
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+#discovery:
+# ignore:
+#   - sonos
+#   - yeelightsunflower
+
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Enables a map showing the location of tracked devices
+map:
+
+mqtt:
+  broker : 10.0.0.1
+
+switch:
+  - platform: mqtt
+    name: iPlug
+    state_topic: "Plug/1/turn"
+    command_topic: "Plug/1/turn"
+    payload_on: "0"
+    payload_off: "1"
+  - platform: mqtt
+    name: iPlug2
+    state_topic: "Plug/2/turn"
+    command_topic: "Plug/2/turn"
+    payload_on: "1"
+    payload_off: "0"
+
+# Track the sun
+sun:
+
+# Weather prediction
+sensor:
+  #- platform: yr
+  - platform: mqtt
+    name: "current"
+    state_topic: "Plug/1/current"
+    unit_of_measurement: "mAmp"
+    value_template: '{{ value_json.current }}'
+  - platform: mqtt
+    name: "watts"
+    unit_of_measurement: "mW"
+    state_topic: "Plug/1/current"
+    value_template: '{{ value_json.watts }}'
+  - platform: mqtt
+    name: "Temperature"
+    unit_of_measurement: "°C"
+    state_topic: "Sensor/temperature"
+    value_template: '{{ value_json.temperature }}'
+  - platform: mqtt
+    name: "Humidity"
+    unit_of_measurement: "%"
+    state_topic: "Sensor/temperature"
+    value_template: '{{ value_json.humidity }}'
+  - platform: mqtt
+    name: "Movement"
+    state_topic: "Sensor/movement"
+    initial_state: "off"
+  - platform: time_date
+    display_options:
+      - 'time'
+
+
+history_graph:
+  gr1:
+    name: Current graph
+    entities:
+      - sensor.current
+    hours_to_show: 1
+    refresh: 2
+  gr2:
+    name: Watts graph
+    entities:
+      - sensor.watts
+    hours_to_show: 1
+    refresh: 2
+  gr3:
+    name: Temperature graph
+    entities:
+    - sensor.temperature
+    hours_to_show: 24
+    refresh: 2
+  gr4:
+    name: Movements graph
+    entities:
+      - sensor.Movement
+    hours_to_show: 1
+    refresh: 2
+  gr5:
+    name: Humidity graph
+    entities:
+      - sensor.Humidity
+    hours_to_show: 24
+    refresh: 2
+
+# Text to speech
+tts:
+  - platform: google
+
+# Cloud
+cloud:
+
+input_datetime:
+  turn_on_time:
+    name: Plug time on
+    has_date: false
+    has_time: true
+    initial: '12:00'
+  turn_off_time:
+    name: Plug time off
+    has_date: false
+    has_time: true
+    initial: '13:00'
+  turn_on_time2:
+    name: Plug2 time on
+    has_date: false
+    has_time: true
+    initial: '12:00'
+  turn_off_time2:
+    name: Plug2 time off
+    has_date: false
+    has_time: true
+    initial: '13:00'
+
+input_boolean:
+  alarm_on_input_status:
+    name: Plug turn on automatic alarm
+    initial: off
+    icon: mdi:alarm
+  alarm_off_input_status:
+    name: Plug turn off automatic alarm
+    initial: off
+    icon: mdi:alarm
+  alarm_on_input_status2:
+    name: Plug2 turn on automatic alarm
+    initial: off
+    icon: mdi:alarm
+  alarm_off_input_status2:
+    name: Plug2 turn off automatic alarm
+    initial: off
+    icon: mdi:alarm
+  sunset_input_status:
+    name: Automatic sunset on
+    initial: off
+    icon: mdi:weather-sunset
+  movement_input_status:
+    name: Plug turn on automatic from movement
+    initial: off
+    icon: mdi:cctv
+
+automation:
+ - alias: 'Automatic plug turn on'
+   hide_entity: True
+   trigger:
+    platform: template
+    value_template: "{{ states.sensor.time.state == (states.input_datetime.turn_on_time.attributes.timestamp | int | timestamp_custom('%H:%M', False)) }}"
+   condition:
+    condition: state
+    entity_id: input_boolean.alarm_on_input_status
+    state: 'on'
+   action:
+    - service: switch.turn_on
+      entity_id: switch.iplug
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.alarm_on_input_status
+
+ - alias: 'Automatic plug turn off'
+   hide_entity: True
+   trigger:
+    platform: template
+    value_template: "{{ states.sensor.time.state == (states.input_datetime.turn_off_time.attributes.timestamp | int | timestamp_custom('%H:%M', False)) }}"
+   condition:
+    condition: state
+    entity_id: input_boolean.alarm_off_input_status
+    state: 'on'
+   action:
+    - service: switch.turn_off
+      entity_id: switch.iplug
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.alarm_off_input_status
+
+ - alias: 'Automatic turn on Sunset '
+   hide_entity: True
+   trigger:
+    platform: sun
+    event: sunset
+   condition:
+    condition: state
+    entity_id: input_boolean.sunset_input_status
+    state: 'on'
+   action:
+    - service: switch.turn_on
+      entity_id: switch.iplug
+
+ - alias: 'Automatic plug turn on from movement'
+   hide_entity: True
+   trigger:
+    platform: mqtt
+    topic: "Sensor/movement"
+    payload: 'on'
+   condition:
+    condition: state
+    entity_id: input_boolean.movement_input_status
+    state: 'on'
+   action:
+    - service: switch.turn_on
+      entity_id: switch.iplug
+    - service: switch.turn_on
+      entity_id: switch.iplug2
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.movement_input_status
+
+ - alias: 'Automatic plug2 turn on'
+   hide_entity: True
+   trigger:
+    platform: template
+    value_template: "{{ states.sensor.time.state == (states.input_datetime.turn_on_time2.attributes.timestamp | int | timestamp_custom('%H:%M', False)) }}"
+   condition:
+    condition: state
+    entity_id: input_boolean.alarm_on_input_status2
+    state: 'on'
+   action:
+    - service: switch.turn_on
+      entity_id: switch.iplug2
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.alarm_on_input_status2
+
+ - alias: 'Automatic plug2 turn off'
+   hide_entity: True
+   trigger:
+    platform: template
+    value_template: "{{ states.sensor.time.state == (states.input_datetime.turn_off_time2.attributes.timestamp | int | timestamp_custom('%H:%M', False)) }}"
+   condition:
+    condition: state
+    entity_id: input_boolean.alarm_off_input_status2
+    state: 'on'
+   action:
+    - service: switch.turn_off
+      entity_id: switch.iplug2
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.alarm_off_input_status2
